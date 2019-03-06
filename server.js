@@ -209,8 +209,9 @@ app.get('/meme-hook', function (req, res){
 })
 // Tell the Browser to stop asking for the favicon :)
 app.get('/favicon.ico', function(req, res) {
-    res.status(204);
+    res.sendStatus(204);
 });
 app.all('*', function (req, res){
 	console.log('URL HIT WITH NO ROUTE', req.originalUrl)
+	res.sendStatus(404);
 })
