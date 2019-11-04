@@ -19,7 +19,7 @@ const http = require('http');
 const Q = require('q');
 const uuidv4 = require('uuid/v4');
 const passport = require('passport');
-const StrategyGoogle = require('passport-google-openidconnect').Strategy;
+const StrategyGoogle = require('passport-google-oauth20').Strategy;
 
 var db = require('./db'); //initializes the database connection and allows to access the models we created
 var memes = require('./controllers/memes'); //imports the functions from the meme controller
@@ -70,10 +70,10 @@ passport.deserializeUser(function (obj, done){
 passport.use(new StrategyGoogle({
 		clientID: process.env.GOOGLE_CLIENT_ID || 'YOUR_CLIENT_ID',
 		clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'YOUR_CLIENT_SECRET',
-		callbackURL: 'http://nodejs.'+ (process.env.NET_ID || 'YOUR_NET_ID') +'.it210.it.et.byu.edu/auth/google/return'
+		callbackURL: 'https://nodejs-'+ (process.env.NET_ID || 'YOUR_NET_ID') +'.it210.it.et.byu.edu/auth/google/return'
 	},
-	function (iss, sub, profile, accessToken, refreshToken, done){
-		done(null, profile);
+	function (accessToken, refreshToken, profile, cb){
+		cb(null, profile);
 	}
 ));
 
@@ -113,13 +113,13 @@ app.get('/login', function (req, res){
 	res.render('login');
 })
 
-app.get('/auth/google', passport.authenticate('google-openidconnect', {
-		 scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email']},
+app.get('/auth/google', passport.authenticate('google', {
+		 scope: ['profile', 'email']},
 		 { failureRedirect: '/login' }), function (req, res){
 	res.redirect('/memes/user');
 })
 
-app.get('/auth/google/return',  passport.authenticate('google-openidconnect', { failureRedirect: '/login' }),  function (req, res){
+app.get('/auth/google/return',  passport.authenticate('google', { failureRedirect: '/login' }),  function (req, res){
 	//generate key to use for creating memes
 	generateKey(req, uuidv4()).then(function (key){
 		req.user.cskey = key;
